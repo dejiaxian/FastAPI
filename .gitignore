@@ -1,3 +1,8 @@
-venv 
+# Ignore the virtual environment folder
+venv
+
+# Ignore Python cache files
 __pycache__
+
+# Ignore the entire IKad-Temp Cropping Model folder
 IKad-Temp Cropping Model/
