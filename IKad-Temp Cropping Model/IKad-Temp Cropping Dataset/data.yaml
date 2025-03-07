@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['ikad-temp']
+
+roboflow:
+  workspace: jiaxian5
+  project: ikad-temp-cropping-augmentation
+  version: 4
+  license: Private
+  url: https://app.roboflow.com/jiaxian5/ikad-temp-cropping-augmentation/4
