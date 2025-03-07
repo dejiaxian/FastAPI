@@ -25,8 +25,8 @@ def get_db():
         db.close()
 
 # Welcome message
-@app.get("/welcome message/")
-def read_root():
+@app.get("/")
+def welcome_message():
     return {"message": "Welcome to my FastAPI app!"}
 
 # Pydantic model for user input validation
@@ -36,7 +36,7 @@ class UserCreate(BaseModel):
     position: str  
     university: str  
 
-# Validation for name, university, and position to only consist of alphabetical characters
+    # Validation for name, university, and position to only consist of alphabetical characters
     @field_validator("name", "position", "university")
     @classmethod
     def validate_text_fields(cls, value: str) -> str:
@@ -63,7 +63,6 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     return {"message": "User added successfully!"}
-    return new_user
 
 # Get all users
 @app.get("/all-users/")
