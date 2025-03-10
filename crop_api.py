@@ -4,20 +4,20 @@ import uvicorn
 import shutil
 import base64
 import numpy as np  
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, LargeBinary
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from PIL import Image
 from ultralytics import YOLO
-from cropping_function import process_image
+from crop_function import process_image
 
 # Initialize FastAPI app
 app = FastAPI()
 
 # Database setup
-DATABASE_URL = "sqlite:///./test.db"
+DATABASE_URL = "sqlite:///./IKad_Temp_database.db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -34,12 +34,20 @@ class ImageModel(Base):
 
 Base.metadata.create_all(bind=engine)
 
+# Dependency to get database session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 # Load the trained model
 model_path = r"C:\Users\User\Desktop\FastAPI\best.pt"
 model = YOLO(model_path)
 
 @app.post("/image_cropping/")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
     try:
         # Read the uploaded file contents
         contents = await file.read()
@@ -50,9 +58,6 @@ async def upload_image(file: UploadFile = File(...)):
         temp_file_path = os.path.join(temp_dir, file.filename)
         with open(temp_file_path, "wb") as temp_file:
             temp_file.write(contents)
-
-        # Define the model path
-        model_path = r"C:\Users\User\Desktop\FastAPI\best.pt"
 
         # Process the image
         result = process_image(temp_file_path, model_path)
@@ -66,7 +71,6 @@ async def upload_image(file: UploadFile = File(...)):
             cropped_image = cropped_file.read()
 
         # Save the original and cropped images to the database
-        db = SessionLocal()
         db_image = ImageModel(original_image=contents, cropped_image=cropped_image, x1=x1, y1=y1, x2=x2, y2=y2)
         db.add(db_image)
         db.commit()
@@ -79,10 +83,8 @@ async def upload_image(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/images/{image_id}")
-async def get_image(image_id: int):
-    db = SessionLocal()
+async def get_image(image_id: int, db: Session = Depends(get_db)):
     db_image = db.query(ImageModel).filter(ImageModel.id == image_id).first()
-    db.close()
     if db_image is None:
         raise HTTPException(status_code=404, detail="Image not found")
     
@@ -93,13 +95,10 @@ async def get_image(image_id: int):
     return StreamingResponse(cropped_image_io, media_type="image/jpeg")
 
 @app.delete("/images/{image_id}")
-async def delete_image(image_id: int):
-    db = SessionLocal()
+async def delete_image(image_id: int, db: Session = Depends(get_db)):
     db_image = db.query(ImageModel).filter(ImageModel.id == image_id).first()
     if db_image is None:
-        db.close()
         raise HTTPException(status_code=404, detail="Image not found")
     db.delete(db_image)
     db.commit()
-    db.close()
     return JSONResponse(status_code=200, content={"message": "Image deleted successfully."})

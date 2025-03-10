@@ -13,9 +13,6 @@ def process_image(image_path: str, model_path: str, custom_save_path: str = "pre
     # Perform prediction on CPU
     results = model.predict(source=image_path, save=False, device="cpu", conf=0.5)
 
-    # Debugging: Print prediction results
-    print("Prediction results:", results)
-
     # Load the original image
     original_image = cv2.imread(image_path)
 
