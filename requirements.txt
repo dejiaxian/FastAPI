@@ -1,0 +1,7 @@
+fastapi==0.115.11
+pydantic==2.10.6
+sqlalchemy==2.0.38
+pillow==10.4.0
+ultralytics==8.3.61
+uvicorn==0.34.0
+numpy==2.2.3
