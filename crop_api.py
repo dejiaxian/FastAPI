@@ -1,15 +1,9 @@
 import io
 import os
-import uvicorn
-import shutil
-import base64
-import numpy as np  
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String, LargeBinary
+from sqlalchemy import create_engine, Column, Integer, LargeBinary
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
-from PIL import Image
 from ultralytics import YOLO
 from crop_function import process_image
 
@@ -17,13 +11,13 @@ from crop_function import process_image
 app = FastAPI()
 
 # Database setup
-DATABASE_URL = "sqlite:///./IKad_Temp_database.db"
+DATABASE_URL = "sqlite:///./ikad_temp_database.db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 class ImageModel(Base):
-    __tablename__ = "IKad-Temp"
+    __tablename__ = "ikad_temp"
     id = Column(Integer, primary_key=True, index=True)
     original_image = Column(LargeBinary, nullable=False)
     cropped_image = Column(LargeBinary, nullable=False)

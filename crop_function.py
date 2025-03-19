@@ -30,7 +30,7 @@ def process_image(image_path: str, model_path: str, custom_save_path: str = "pre
             x1, y1, x2, y2 = map(int, box)  # Convert to integers for coordinates
             cropped_image = original_image[y1:y2, x1:x2]  # Crop the image to the bounding box
 
-            # Resize the cropped image to the size of a IKad-Temp card (adjust the target size as needed)
+            # Resize the cropped image to the size of a ikad_temp card (adjust the target size as needed)
             target_size = (856, 539)  # Example size in pixels (width, height)
             resized_image = cv2.resize(cropped_image, target_size)
 
@@ -42,7 +42,7 @@ def process_image(image_path: str, model_path: str, custom_save_path: str = "pre
             print(f"Cropped and resized image saved at: {cropped_resized_path}")
 
         # Annotate and save the original image with bounding boxes (optional)
-        class_names = ['ikad-temp']  
+        class_names = ['ikad_temp']  
         for i, box in enumerate(results[0].boxes.xyxy):
             x1, y1, x2, y2 = map(int, box)  # Convert to integers for coordinates
             confidence = results[0].boxes.conf[i].item()  # Get confidence score
